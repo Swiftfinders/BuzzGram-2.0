@@ -53,8 +53,8 @@ export default function CitySelector() {
       if (city) return city;
     }
 
-    // Default to first city if no selection
-    return cities[0];
+    // No default - let user select a city
+    return null;
   }, [cities, cityId, location.pathname]);
 
   const handleCitySelect = (selectedCityId: number) => {
