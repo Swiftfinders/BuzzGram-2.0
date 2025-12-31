@@ -17,14 +17,18 @@ export default function CitySelector() {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   // Save current city to localStorage when on a city page
@@ -57,10 +61,12 @@ export default function CitySelector() {
     }
 
     // If not on a city page, try to get last selected city from localStorage
-    const lastCityId = localStorage.getItem('lastSelectedCityId');
-    if (lastCityId) {
-      const city = cities.find((c) => c.id === Number(lastCityId));
-      if (city) return city;
+    if (location.pathname === '/') {
+      const lastCityId = localStorage.getItem('lastSelectedCityId');
+      if (lastCityId) {
+        const city = cities.find((c) => c.id === Number(lastCityId));
+        if (city) return city;
+      }
     }
 
     // No default - let user select a city
