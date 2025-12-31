@@ -60,18 +60,10 @@ export default function CitySelector() {
       }
     }
 
-    // If not on a city page, try to get last selected city from localStorage
-    if (location.pathname === '/') {
-      const lastCityId = localStorage.getItem('lastSelectedCityId');
-      if (lastCityId) {
-        const city = cities.find((c) => c.id === Number(lastCityId));
-        if (city) return city;
-      }
-    }
-
-    // No default - let user select a city
+    // If not on a city page, don't show any city in the dropdown
+    // (The auto-redirect will handle returning users)
     return null;
-  }, [cities, cityId, location.pathname]);
+  }, [cities, cityId]);
 
   const handleCitySelect = (selectedCityId: number) => {
     localStorage.setItem('lastSelectedCityId', selectedCityId.toString());
