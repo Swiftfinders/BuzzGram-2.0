@@ -2,8 +2,6 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { getGeneralQuotes } from '../lib/api';
-import { useEffect } from 'react';
-import axios from 'axios';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -13,14 +11,6 @@ export default function AdminDashboard() {
     queryKey: ['generalQuotes'],
     queryFn: getGeneralQuotes,
   });
-
-  // Set auth token for API requests
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">

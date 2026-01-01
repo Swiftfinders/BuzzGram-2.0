@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
-import { getCategories, getSubcategories } from '../lib/api';
-import axios from 'axios';
+import { getCategories, getSubcategories, api } from '../lib/api';
 
 interface GeneralQuoteModalProps {
   isOpen: boolean;
@@ -78,11 +77,10 @@ export default function GeneralQuoteModal({ isOpen, onClose }: GeneralQuoteModal
     setLoading(true);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
       const token = localStorage.getItem('token');
 
-      await axios.post(
-        `${API_URL}/general-quotes`,
+      await api.post(
+        '/general-quotes',
         {
           name,
           email,
