@@ -135,16 +135,16 @@ export default function GeneralQuoteModal({ isOpen, onClose }: GeneralQuoteModal
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      {/* Backdrop */}
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]">
+      {/* Backdrop - Click to close */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="absolute inset-0"
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* Modal Container */}
       <div
-        className="relative w-full max-w-2xl bg-white dark:bg-dark-card rounded-lg shadow-xl z-[10000] max-h-[90vh] overflow-y-auto"
+        className="relative bg-white dark:bg-dark-card rounded-lg max-h-[90vh] overflow-y-auto max-w-lg w-full mx-4 z-[1001]"
         onClick={(e) => e.stopPropagation()}
       >
           {/* Header */}
