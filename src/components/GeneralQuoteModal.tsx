@@ -137,7 +137,7 @@ export default function GeneralQuoteModal({ isOpen, onClose }: GeneralQuoteModal
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center" onClick={onClose}>
       <div
-        className="relative bg-white dark:bg-dark-card rounded-lg shadow-xl max-h-[90vh] overflow-y-auto max-w-2xl w-full mx-4"
+        className="relative bg-white dark:bg-dark-card rounded-lg shadow-xl max-h-[90vh] overflow-y-auto max-w-lg w-full mx-4"
         onClick={(e) => e.stopPropagation()}
       >
           {/* Header */}
