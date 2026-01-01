@@ -1,21 +1,95 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getBusiness } from '../lib/api';
+import { getBusiness, getCategories, getSubcategories, submitQuoteRequest } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/LoadingSpinner';
+import type { AvailabilitySlot } from '../types';
 
 type TabType = 'about' | 'services' | 'reviews' | 'quote';
 
 export default function BusinessDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('about');
+
+  // Quote form state
+  const [quoteName, setQuoteName] = useState('');
+  const [quoteEmail, setQuoteEmail] = useState('');
+  const [quotePhone, setQuotePhone] = useState('');
+  const [quoteCategoryId, setQuoteCategoryId] = useState('');
+  const [quoteSubcategoryId, setQuoteSubcategoryId] = useState('');
+  const [quoteAvailability, setQuoteAvailability] = useState<AvailabilitySlot[]>([
+    { date: '', timeSlot: 'morning' }
+  ]);
+  const [quoteMessage, setQuoteMessage] = useState('');
+  const [quoteError, setQuoteError] = useState('');
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteSuccess, setQuoteSuccess] = useState(false);
 
   const { data: business, isLoading, error } = useQuery({
     queryKey: ['business', id],
     queryFn: () => getBusiness(Number(id)),
     enabled: !!id,
   });
+
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+  });
+
+  const { data: subcategories } = useQuery({
+    queryKey: ['subcategories'],
+    queryFn: getSubcategories,
+  });
+
+  // Filter subcategories by selected category
+  const filteredSubcategories = subcategories?.filter(
+    (sub) => sub.categoryId === parseInt(quoteCategoryId)
+  );
+
+  // Pre-fill form with user data if logged in
+  useEffect(() => {
+    if (user) {
+      setQuoteName(user.name || '');
+      setQuoteEmail(user.email || '');
+    }
+  }, [user]);
+
+  const handleQuoteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setQuoteError('');
+
+    // Validate at least one availability slot
+    const validSlots = quoteAvailability.filter(slot => slot.date !== '');
+    if (validSlots.length === 0) {
+      setQuoteError('Please select at least one available date');
+      return;
+    }
+
+    setQuoteLoading(true);
+
+    try {
+      await submitQuoteRequest({
+        businessId: business!.id,
+        name: quoteName,
+        email: quoteEmail,
+        phone: quotePhone || undefined,
+        categoryId: parseInt(quoteCategoryId),
+        subcategoryId: quoteSubcategoryId ? parseInt(quoteSubcategoryId) : undefined,
+        availability: JSON.stringify(validSlots),
+        message: quoteMessage || undefined,
+      });
+
+      setQuoteSuccess(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err: any) {
+      setQuoteError(err.response?.data?.message || 'Failed to submit quote request. Please try again.');
+    } finally {
+      setQuoteLoading(false);
+    }
+  };
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -370,40 +444,226 @@ export default function BusinessDetail() {
         {/* Get Quote Tab */}
         {activeTab === 'quote' && (
           <div className="max-w-4xl">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
               Request a Quote
             </h2>
-            <div className="bg-gray-50 dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-6">
-              <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
-                Interested in {business.name}'s services? Get in touch to request a quote.
-              </p>
-              <div className="space-y-3">
-                {business.instagramHandle && (
-                  <a
-                    href={business.instagramUrl || `https://instagram.com/${business.instagramHandle}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-md text-sm font-medium hover:bg-orange-600 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                    Contact via Instagram
-                  </a>
-                )}
-                {business.phone && (
-                  <div className="pt-2">
-                    <p className="text-gray-600 dark:text-gray-400 text-xs mb-1">Or call directly:</p>
-                    <a
-                      href={`tel:${business.phone}`}
-                      className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium text-base"
-                    >
-                      {business.phone}
-                    </a>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Fill out the form below and {business.name} will contact you shortly.
+            </p>
+
+            {quoteSuccess ? (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 text-center">
+                <svg className="w-16 h-16 text-green-600 dark:text-green-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
+                  Thank you!
+                </h3>
+                <p className="text-green-700 dark:text-green-300">
+                  Your quote request has been submitted and {business.name} will contact you shortly.
+                </p>
+                <button
+                  onClick={() => {
+                    setQuoteSuccess(false);
+                    setQuoteName('');
+                    setQuoteEmail('');
+                    setQuotePhone('');
+                    setQuoteCategoryId('');
+                    setQuoteSubcategoryId('');
+                    setQuoteAvailability([{ date: '', timeSlot: 'morning' }]);
+                    setQuoteMessage('');
+                  }}
+                  className="mt-4 text-orange-600 dark:text-orange-400 hover:underline"
+                >
+                  Submit another request
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleQuoteSubmit} className="space-y-4">
+                {quoteError && (
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                    <p className="text-sm text-red-800 dark:text-red-200">{quoteError}</p>
                   </div>
                 )}
-              </div>
-            </div>
+
+                {/* Name Field */}
+                <div>
+                  <label htmlFor="quote-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="quote-name"
+                    type="text"
+                    required
+                    value={quoteName}
+                    onChange={(e) => setQuoteName(e.target.value)}
+                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-dark-border placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="John Doe"
+                  />
+                </div>
+
+                {/* Email Field */}
+                <div>
+                  <label htmlFor="quote-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="quote-email"
+                    type="email"
+                    required
+                    value={quoteEmail}
+                    onChange={(e) => setQuoteEmail(e.target.value)}
+                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-dark-border placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="john@example.com"
+                  />
+                </div>
+
+                {/* Phone Field */}
+                <div>
+                  <label htmlFor="quote-phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Phone
+                  </label>
+                  <input
+                    id="quote-phone"
+                    type="tel"
+                    value={quotePhone}
+                    onChange={(e) => setQuotePhone(e.target.value)}
+                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-dark-border placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+
+                {/* Category Dropdown */}
+                <div>
+                  <label htmlFor="quote-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Service Category <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="quote-category"
+                    required
+                    value={quoteCategoryId}
+                    onChange={(e) => {
+                      setQuoteCategoryId(e.target.value);
+                      setQuoteSubcategoryId(''); // Reset subcategory
+                    }}
+                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-dark-border text-gray-900 dark:text-white bg-white dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="">Select a category</option>
+                    {categories?.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Subcategory Dropdown */}
+                {quoteCategoryId && (
+                  <div>
+                    <label htmlFor="quote-subcategory" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Service Subcategory
+                    </label>
+                    <select
+                      id="quote-subcategory"
+                      value={quoteSubcategoryId}
+                      onChange={(e) => setQuoteSubcategoryId(e.target.value)}
+                      className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-dark-border text-gray-900 dark:text-white bg-white dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    >
+                      <option value="">Select a subcategory (optional)</option>
+                      {filteredSubcategories?.map((sub) => (
+                        <option key={sub.id} value={sub.id}>
+                          {sub.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Availability Date Picker */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    When are you available? (up to 3 dates) <span className="text-red-500">*</span>
+                  </label>
+
+                  {quoteAvailability.map((slot, index) => (
+                    <div key={index} className="flex gap-2 mb-2">
+                      <input
+                        type="date"
+                        value={slot.date}
+                        onChange={(e) => {
+                          const newAvailability = [...quoteAvailability];
+                          newAvailability[index].date = e.target.value;
+                          setQuoteAvailability(newAvailability);
+                        }}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="flex-1 appearance-none rounded-lg px-3 py-2 border border-gray-300 dark:border-dark-border text-gray-900 dark:text-white bg-white dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                      <select
+                        value={slot.timeSlot}
+                        onChange={(e) => {
+                          const newAvailability = [...quoteAvailability];
+                          newAvailability[index].timeSlot = e.target.value as 'morning' | 'afternoon' | 'evening';
+                          setQuoteAvailability(newAvailability);
+                        }}
+                        className="appearance-none rounded-lg px-3 py-2 border border-gray-300 dark:border-dark-border text-gray-900 dark:text-white bg-white dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      >
+                        <option value="morning">Morning</option>
+                        <option value="afternoon">Afternoon</option>
+                        <option value="evening">Evening</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setQuoteAvailability(quoteAvailability.filter((_, i) => i !== index));
+                        }}
+                        className="px-3 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+
+                  {quoteAvailability.length < 3 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuoteAvailability([
+                          ...quoteAvailability,
+                          { date: '', timeSlot: 'morning' as const },
+                        ]);
+                      }}
+                      className="text-orange-600 dark:text-orange-400 hover:underline text-sm"
+                    >
+                      + Add another date
+                    </button>
+                  )}
+                </div>
+
+                {/* Additional Information */}
+                <div>
+                  <label htmlFor="quote-message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Additional Information
+                  </label>
+                  <textarea
+                    id="quote-message"
+                    value={quoteMessage}
+                    onChange={(e) => setQuoteMessage(e.target.value)}
+                    rows={4}
+                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-dark-border placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                    placeholder="Any additional details or requirements..."
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={quoteLoading}
+                  className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {quoteLoading ? 'Submitting...' : 'Request Quote'}
+                </button>
+              </form>
+            )}
           </div>
         )}
       </div>

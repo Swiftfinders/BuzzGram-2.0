@@ -73,3 +73,18 @@ export const checkFavorite = async (businessId: number): Promise<boolean> => {
   const { data } = await api.get(`/favorites/check/${businessId}`);
   return data.data.isFavorited;
 };
+
+// Quote Requests
+export const submitQuoteRequest = async (quoteData: {
+  businessId: number;
+  name: string;
+  email: string;
+  phone?: string;
+  categoryId: number;
+  subcategoryId?: number;
+  availability: string;
+  message?: string;
+}) => {
+  const { data } = await api.post('/quote-requests', quoteData);
+  return data;
+};

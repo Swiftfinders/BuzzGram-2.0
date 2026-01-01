@@ -51,3 +51,19 @@ export interface BusinessSearchParams {
   subcategoryId?: number;
   search?: string;
 }
+
+export interface QuoteRequest {
+  businessId: number;
+  name: string;
+  email: string;
+  phone?: string;
+  categoryId: number;
+  subcategoryId?: number;
+  availability: string; // JSON string of date/time slots
+  message?: string;
+}
+
+export interface AvailabilitySlot {
+  date: string; // ISO date string
+  timeSlot: 'morning' | 'afternoon' | 'evening';
+}
