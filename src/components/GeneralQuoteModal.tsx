@@ -406,7 +406,6 @@ export default function GeneralQuoteModal({ isOpen, onClose }: GeneralQuoteModal
               </form>
             )}
           </div>
-        </div>
       </div>
     </div>
   );
