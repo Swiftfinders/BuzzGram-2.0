@@ -10,6 +10,7 @@ export default function UserDashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showQuotes, setShowQuotes] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
   const [deletingQuoteId, setDeletingQuoteId] = useState<string | null>(null);
 
   const { data: favorites, isLoading: favoritesLoading } = useQuery({
@@ -68,7 +69,10 @@ export default function UserDashboard() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6">
+          <button
+            onClick={() => setShowFavorites(!showFavorites)}
+            className="w-full bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6 hover:border-orange-500 dark:hover:border-orange-500 transition-all cursor-pointer"
+          >
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
@@ -77,12 +81,22 @@ export default function UserDashboard() {
                   </svg>
                 </div>
               </div>
-              <div className="ml-4">
+              <div className="ml-4 text-left flex-1">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Saved Favorites</p>
                 <p className="text-2xl font-semibold text-gray-900 dark:text-white">{favorites?.length || 0}</p>
               </div>
+              <div className="ml-4">
+                <svg
+                  className={`w-5 h-5 text-gray-400 transition-transform ${showFavorites ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
-          </div>
+          </button>
 
           <button
             onClick={() => setShowQuotes(!showQuotes)}
@@ -253,46 +267,48 @@ export default function UserDashboard() {
           </div>
         )}
 
-        {/* Saved Favorites Section */}
-        <div className="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Saved Favorites
-            </h2>
-            <Link
-              to="/"
-              className="text-sm font-medium text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors"
-            >
-              Browse Businesses
-            </Link>
-          </div>
-
-          {favorites && favorites.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {favorites.map((favorite: any) => (
-                <BusinessCard key={favorite.id} business={favorite.business} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-                No favorites yet
-              </h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-300">
-                Start exploring and save your favorite businesses
-              </p>
+        {/* Saved Favorites Section - Collapsible */}
+        {showFavorites && (
+          <div className="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Saved Favorites
+              </h2>
               <Link
                 to="/"
-                className="mt-4 inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
+                className="text-sm font-medium text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors"
               >
-                Explore Businesses
+                Browse Businesses
               </Link>
             </div>
-          )}
-        </div>
+
+            {favorites && favorites.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {favorites.map((favorite: any) => (
+                  <BusinessCard key={favorite.id} business={favorite.business} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+                  No favorites yet
+                </h3>
+                <p className="mt-2 text-gray-600 dark:text-gray-300">
+                  Start exploring and save your favorite businesses
+                </p>
+                <Link
+                  to="/"
+                  className="mt-4 inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
+                >
+                  Explore Businesses
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6">
