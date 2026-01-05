@@ -90,7 +90,8 @@ export default function CitySelector() {
       {/* Dropdown Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors border border-gray-200 dark:border-dark-border"
+        className="flex items-center space-x-1.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors border border-gray-200 dark:border-dark-border"
+        title={currentCity?.name || 'Select City'}
       >
         <svg
           className="w-5 h-5 text-orange-500"
@@ -103,9 +104,6 @@ export default function CitySelector() {
             clipRule="evenodd"
           />
         </svg>
-        <span className="text-base font-semibold text-gray-900 dark:text-white">
-          {currentCity?.name || 'Select City'}
-        </span>
         <svg
           className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${
             isOpen ? 'rotate-180' : ''
