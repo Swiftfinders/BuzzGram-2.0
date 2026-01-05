@@ -7,19 +7,19 @@ export default function PromotionalBanner() {
     <>
       {/* Desktop Version - Hidden on mobile */}
       <div className="hidden md:block w-full bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl overflow-hidden shadow-lg mb-8">
-        <div className="max-w-7xl mx-auto px-8 py-10">
+        <div className="max-w-7xl mx-auto px-8 py-6">
           <div className="flex items-center justify-between">
             {/* Left side: Text content */}
             <div className="flex-1">
-              <h2 className="text-3xl font-bold text-white mb-3">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Get Quotes from Multiple Providers
               </h2>
-              <p className="text-lg text-white/90 mb-6 max-w-2xl">
+              <p className="text-base text-white/90 mb-4 max-w-2xl">
                 Find Beauty, Food & Events specialists all in one place. No need to contact each business separately.
               </p>
               <button
                 onClick={() => navigate('/quote')}
-                className="px-6 py-3 bg-white text-orange-600 font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-md"
+                className="px-5 py-2.5 bg-white text-orange-600 font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-md"
               >
                 Explore Quote Tool →
               </button>
