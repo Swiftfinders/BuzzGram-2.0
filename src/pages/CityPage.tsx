@@ -6,6 +6,7 @@ import BusinessCard from '../components/BusinessCard';
 import CategoryFilter from '../components/CategoryFilter';
 import SubcategoryFilter from '../components/SubcategoryFilter';
 import LoadingSpinner from '../components/LoadingSpinner';
+import PromotionalBanner from '../components/PromotionalBanner';
 
 export default function CityPage() {
   const { cityId } = useParams<{ cityId: string }>();
@@ -83,6 +84,11 @@ export default function CityPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg">
+      {/* Promotional Banner */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <PromotionalBanner />
+      </div>
+
       {/* Filters */}
       <div className="bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
