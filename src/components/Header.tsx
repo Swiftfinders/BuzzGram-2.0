@@ -1,17 +1,16 @@
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
 import UserDropdown from './UserDropdown';
 import CitySelector from './CitySelector';
-import GeneralQuoteModal from './GeneralQuoteModal';
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -43,7 +42,6 @@ export default function Header() {
   }, []);
 
   return (
-    <>
     <header className="bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border sticky top-0 z-50 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
@@ -88,7 +86,7 @@ export default function Header() {
           <div className="flex items-center space-x-3">
             {/* Get Quote Button - Visible to everyone */}
             <button
-              onClick={() => setIsQuoteModalOpen(true)}
+              onClick={() => navigate('/quote')}
               className="px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400 border border-gray-200 dark:border-dark-border hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/10 rounded-lg transition-colors"
             >
               Get Quote
@@ -204,12 +202,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-
-    {/* General Quote Modal - Outside header for proper z-index */}
-    <GeneralQuoteModal
-      isOpen={isQuoteModalOpen}
-      onClose={() => setIsQuoteModalOpen(false)}
-    />
-    </>
   );
 }
