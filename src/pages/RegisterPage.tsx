@@ -20,6 +20,8 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +81,20 @@ export default function RegisterPage() {
     }
   };
 
+  const handleResendVerification = async () => {
+    setResending(true);
+    setResendMessage('');
+
+    try {
+      await api.post('/auth/resend-verification', { email });
+      setResendMessage('✅ Verification email sent! Please check your inbox.');
+    } catch (err: any) {
+      setResendMessage('❌ ' + (err.response?.data?.message || 'Failed to resend email. Please try again.'));
+    } finally {
+      setResending(false);
+    }
+  };
+
   // Success state - show email verification message
   if (success) {
     return (
@@ -99,12 +115,32 @@ export default function RegisterPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
               Please click the link in the email to verify your account before logging in.
             </p>
-            <Link
-              to="/login"
-              className="inline-block px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition-colors"
-            >
-              Go to Login
-            </Link>
+
+            {resendMessage && (
+              <div className={`mb-4 p-3 rounded-lg text-sm ${
+                resendMessage.startsWith('✅')
+                  ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
+                  : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
+              }`}>
+                {resendMessage}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <Link
+                to="/login"
+                className="block w-full px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition-colors text-center"
+              >
+                Go to Login
+              </Link>
+              <button
+                onClick={handleResendVerification}
+                disabled={resending}
+                className="w-full px-6 py-3 border border-gray-300 dark:border-dark-border hover:border-orange-500 dark:hover:border-orange-500 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {resending ? 'Sending...' : 'Resend Verification Email'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
