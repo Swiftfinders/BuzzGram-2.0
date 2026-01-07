@@ -63,8 +63,12 @@ export default function UserDropdown() {
           <div className="px-4 py-3 border-b border-gray-200 dark:border-dark-border">
             <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
             <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{user.email}</p>
-            <span className="inline-block mt-1 px-2 py-0.5 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-xs rounded-full capitalize">
-              {user.role.replace('_', ' ')}
+            <span className="inline-block mt-1 px-2 py-0.5 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-xs rounded-full">
+              {user.role === 'business_owner'
+                ? 'Business Owner'
+                : user.role === 'admin'
+                ? 'Admin'
+                : 'Customer'}
             </span>
           </div>
 
