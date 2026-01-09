@@ -289,10 +289,10 @@ export default function AdminDashboard() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Business Claims</p>
                   <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {businessClaims?.filter((c: any) => c.status === 'pending').length || 0}
+                    {businessClaims?.length || 0}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Pending review
+                    {businessClaims?.filter((c: any) => c.status === 'pending').length || 0} pending
                   </p>
                 </div>
               </div>
