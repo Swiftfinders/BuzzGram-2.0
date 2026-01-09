@@ -168,18 +168,18 @@ export const submitBusinessClaim = async (claimData: {
 
 // Admin: Get all business claims
 export const getBusinessClaims = async () => {
-  const { data } = await api.get('/admin/business-claims');
+  const { data } = await api.get('/business-claims/admin/claims');
   return data.data;
 };
 
 // Admin: Approve business claim
 export const approveBusinessClaim = async (claimId: number) => {
-  const { data } = await api.put(`/admin/business-claims/${claimId}/approve`);
+  const { data } = await api.put(`/business-claims/admin/claims/${claimId}/approve`);
   return data;
 };
 
 // Admin: Reject business claim
 export const rejectBusinessClaim = async (claimId: number) => {
-  const { data } = await api.put(`/admin/business-claims/${claimId}/reject`);
+  const { data } = await api.put(`/business-claims/admin/claims/${claimId}/reject`);
   return data;
 };
