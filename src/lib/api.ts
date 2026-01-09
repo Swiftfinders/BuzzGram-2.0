@@ -183,3 +183,9 @@ export const rejectBusinessClaim = async (claimId: number) => {
   const { data } = await api.put(`/business-claims/admin/claims/${claimId}/reject`);
   return data;
 };
+
+// Business Owner: Get owned businesses
+export const getOwnedBusinesses = async () => {
+  const { data } = await api.get('/owner/businesses');
+  return data.data;
+};
