@@ -11,7 +11,7 @@ interface GoogleLoginButtonProps {
 export default function GoogleLoginButton({ userType, onSuccess, onError }: GoogleLoginButtonProps) {
   const googleButtonRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { googleLogin, user } = useAuth();
+  const { googleLogin } = useAuth();
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.google) return;
