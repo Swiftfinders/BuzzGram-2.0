@@ -196,6 +196,12 @@ export const changePassword = async (currentPassword: string, newPassword: strin
   return data;
 };
 
+// User: Set password for OAuth users
+export const setPassword = async (newPassword: string) => {
+  const { data } = await api.post('/auth/set-password', { newPassword });
+  return data;
+};
+
 // User: Delete own account
 export const deleteOwnAccount = async (password: string) => {
   const { data } = await api.delete('/auth/delete-account', { data: { password } });

@@ -78,6 +78,10 @@ export interface User {
   businessName?: string | null;
   instagramHandle?: string | null;
   phone?: string | null;
+  googleId?: string | null;
+  oauthProvider?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RegisterInput {

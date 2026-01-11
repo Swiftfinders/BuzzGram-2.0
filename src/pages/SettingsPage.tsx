@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
-import { changePassword, deleteOwnAccount } from '../lib/api';
+import { changePassword, setPassword, deleteOwnAccount } from '../lib/api';
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
@@ -22,6 +22,9 @@ export default function SettingsPage() {
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
 
+  // Check if user is OAuth-only (no password set)
+  const isOAuthUser = user?.googleId || user?.oauthProvider;
+
   // Change Password Mutation
   const changePasswordMutation = useMutation({
     mutationFn: () => changePassword(currentPassword, newPassword),
@@ -35,6 +38,22 @@ export default function SettingsPage() {
     },
     onError: (error: any) => {
       setPasswordError(error.response?.data?.message || 'Failed to change password');
+      setPasswordSuccess('');
+    },
+  });
+
+  // Set Password Mutation (for OAuth users)
+  const setPasswordMutation = useMutation({
+    mutationFn: () => setPassword(newPassword),
+    onSuccess: () => {
+      setPasswordSuccess('Password set successfully! You can now sign in with email and password.');
+      setPasswordError('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setTimeout(() => setPasswordSuccess(''), 5000);
+    },
+    onError: (error: any) => {
+      setPasswordError(error.response?.data?.message || 'Failed to set password');
       setPasswordSuccess('');
     },
   });
@@ -66,7 +85,12 @@ export default function SettingsPage() {
       return;
     }
 
-    changePasswordMutation.mutate();
+    // Use setPassword for OAuth users, changePassword for regular users
+    if (isOAuthUser) {
+      setPasswordMutation.mutate();
+    } else {
+      changePasswordMutation.mutate();
+    }
   };
 
   const handleDeleteAccount = (e: React.FormEvent) => {
@@ -137,11 +161,16 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Change Password */}
+          {/* Change Password / Set Password */}
           <div className="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Change Password
+              {isOAuthUser ? 'Set Password' : 'Change Password'}
             </h2>
+            {isOAuthUser && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Set a password to enable email and password login in addition to Google Sign-In.
+              </p>
+            )}
             <form onSubmit={handleChangePassword} className="space-y-4">
               {passwordError && (
                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
@@ -154,18 +183,20 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
+              {!isOAuthUser && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -200,10 +231,13 @@ export default function SettingsPage() {
 
               <button
                 type="submit"
-                disabled={changePasswordMutation.isPending}
+                disabled={changePasswordMutation.isPending || setPasswordMutation.isPending}
                 className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {changePasswordMutation.isPending ? 'Changing...' : 'Change Password'}
+                {isOAuthUser
+                  ? (setPasswordMutation.isPending ? 'Setting...' : 'Set Password')
+                  : (changePasswordMutation.isPending ? 'Changing...' : 'Change Password')
+                }
               </button>
             </form>
           </div>
