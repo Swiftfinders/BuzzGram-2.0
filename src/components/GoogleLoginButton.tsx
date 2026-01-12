@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 interface GoogleLoginButtonProps {
   userType?: 'customer' | 'business_owner';
@@ -6,45 +8,123 @@ interface GoogleLoginButtonProps {
   onError?: (error: string) => void;
 }
 
-export default function GoogleLoginButton({ userType }: GoogleLoginButtonProps) {
+export default function GoogleLoginButton({ userType, onSuccess, onError }: GoogleLoginButtonProps) {
+  const navigate = useNavigate();
+  const { googleLogin } = useAuth();
+  const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleGoogleLogin = () => {
+  useEffect(() => {
+    // Store userType in sessionStorage for callback page
+    if (userType) {
+      sessionStorage.setItem('pendingGoogleAuthUserType', userType);
+    }
+
+    // Wait for Google API to load
+    const checkGoogleLoaded = setInterval(() => {
+      if (typeof window !== 'undefined' && window.google?.accounts?.id) {
+        clearInterval(checkGoogleLoaded);
+        initializeGoogle();
+      }
+    }, 100);
+
+    // Cleanup after 10 seconds if not loaded
+    setTimeout(() => clearInterval(checkGoogleLoaded), 10000);
+
+    return () => clearInterval(checkGoogleLoaded);
+  }, [userType]);
+
+  const initializeGoogle = () => {
+    if (!window.google || isInitialized) return;
+
+    try {
+      // Initialize with callback mode
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+
+      setIsInitialized(true);
+    } catch (error) {
+      console.error('Failed to initialize Google Sign-In:', error);
+      if (onError) {
+        onError('Failed to load Google Sign-In. Please refresh the page.');
+      }
+    }
+  };
+
+  const handleCredentialResponse = async (response: any) => {
     if (isLoading) return;
 
     setIsLoading(true);
 
-    // Build Google OAuth URL with prompt=select_account to always show account chooser
-    const client_id = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    const redirect_uri = encodeURIComponent(window.location.origin + '/auth/google/callback');
-    const scope = encodeURIComponent('email profile openid');
-    const state = encodeURIComponent(JSON.stringify({ userType, returnTo: window.location.pathname }));
-    const nonce = Date.now();
+    try {
+      // Get userType from sessionStorage
+      const storedUserType = sessionStorage.getItem('pendingGoogleAuthUserType') as 'customer' | 'business_owner' | null;
 
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=${client_id}&` +
-      `redirect_uri=${redirect_uri}&` +
-      `response_type=id_token&` +
-      `scope=${scope}&` +
-      `state=${state}&` +
-      `nonce=${nonce}&` +
-      `prompt=select_account`;  // Force account selection every time
+      await googleLogin(response.credential, storedUserType || userType);
 
-    // Redirect to Google
-    window.location.href = authUrl;
+      // Clear stored userType
+      sessionStorage.removeItem('pendingGoogleAuthUserType');
+
+      // Call success callback
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/');
+      }
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Google authentication failed';
+      if (onError) {
+        onError(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    if (!isInitialized || !window.google || isLoading) return;
+
+    setIsLoading(true);
+
+    try {
+      // Trigger the Google Sign-In flow
+      // This will open account chooser without showing cached account
+      window.google.accounts.id.prompt((notification: any) => {
+        setIsLoading(false);
+
+        if (notification.isNotDisplayed()) {
+          console.error('Google prompt not displayed:', notification.getNotDisplayedReason());
+          if (onError) {
+            onError('Could not display Google Sign-In. Please try again or use email/password.');
+          }
+        } else if (notification.isSkippedMoment()) {
+          console.log('User closed the prompt');
+        }
+      });
+    } catch (error) {
+      console.error('Failed to trigger Google Sign-In:', error);
+      setIsLoading(false);
+      if (onError) {
+        onError('Failed to start Google Sign-In. Please try again.');
+      }
+    }
   };
 
   return (
     <button
       type="button"
       onClick={handleGoogleLogin}
-      disabled={isLoading}
+      disabled={isLoading || !isInitialized}
       className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-card text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isLoading ? (
         <>
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600 dark:border-gray-400"></div>
-          <span className="text-sm font-medium">Redirecting...</span>
+          <span className="text-sm font-medium">Signing in...</span>
         </>
       ) : (
         <>
