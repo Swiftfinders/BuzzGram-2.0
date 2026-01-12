@@ -184,6 +184,24 @@ export const rejectBusinessClaim = async (claimId: number) => {
   return data;
 };
 
+// Admin: Get all business registrations
+export const getBusinessRegistrations = async () => {
+  const { data } = await api.get('/business-registrations/admin/registrations');
+  return data.data;
+};
+
+// Admin: Approve business registration
+export const approveBusinessRegistration = async (registrationId: number) => {
+  const { data } = await api.put(`/business-registrations/admin/registrations/${registrationId}/approve`);
+  return data;
+};
+
+// Admin: Reject business registration
+export const rejectBusinessRegistration = async (registrationId: number) => {
+  const { data } = await api.put(`/business-registrations/admin/registrations/${registrationId}/reject`);
+  return data;
+};
+
 // Business Owner: Get owned businesses
 export const getOwnedBusinesses = async () => {
   const { data } = await api.get('/owner/businesses');

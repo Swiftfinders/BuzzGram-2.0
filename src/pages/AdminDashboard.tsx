@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { getAdminStats, getAllUsers, getGeneralQuotes, getAllBusinessQuotes, getBusinesses, deleteBusiness, updateBusinessStatus, deleteUser, updateUserStatus, getBusinessClaims, approveBusinessClaim, rejectBusinessClaim } from '../lib/api';
+import { getAdminStats, getAllUsers, getGeneralQuotes, getAllBusinessQuotes, getBusinesses, deleteBusiness, updateBusinessStatus, deleteUser, updateUserStatus, getBusinessClaims, approveBusinessClaim, rejectBusinessClaim, getBusinessRegistrations, approveBusinessRegistration, rejectBusinessRegistration } from '../lib/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function AdminDashboard() {
@@ -12,12 +12,14 @@ export default function AdminDashboard() {
   const [showUsers, setShowUsers] = useState(false);
   const [showQuotes, setShowQuotes] = useState(false);
   const [showClaims, setShowClaims] = useState(false);
+  const [claimFilter, setClaimFilter] = useState<'claims' | 'registrations'>('claims');
   const [businessSearch, setBusinessSearch] = useState('');
   const [deletingBusinessId, setDeletingBusinessId] = useState<number | null>(null);
   const [togglingBusinessId, setTogglingBusinessId] = useState<number | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
   const [togglingUserId, setTogglingUserId] = useState<number | null>(null);
   const [processingClaimId, setProcessingClaimId] = useState<number | null>(null);
+  const [processingRegistrationId, setProcessingRegistrationId] = useState<number | null>(null);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['adminStats'],
@@ -46,6 +48,12 @@ export default function AdminDashboard() {
   const { data: businessClaims } = useQuery({
     queryKey: ['businessClaims'],
     queryFn: getBusinessClaims,
+    enabled: showClaims,
+  });
+
+  const { data: businessRegistrations } = useQuery({
+    queryKey: ['businessRegistrations'],
+    queryFn: getBusinessRegistrations,
     enabled: showClaims,
   });
 
@@ -181,6 +189,47 @@ export default function AdminDashboard() {
     }
   };
 
+  // Approve registration mutation
+  const approveRegistrationMutation = useMutation({
+    mutationFn: approveBusinessRegistration,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['businessRegistrations'] });
+      queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+      setProcessingRegistrationId(null);
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Failed to approve registration');
+      setProcessingRegistrationId(null);
+    },
+  });
+
+  // Reject registration mutation
+  const rejectRegistrationMutation = useMutation({
+    mutationFn: rejectBusinessRegistration,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['businessRegistrations'] });
+      setProcessingRegistrationId(null);
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Failed to reject registration');
+      setProcessingRegistrationId(null);
+    },
+  });
+
+  const handleApproveRegistration = (registrationId: number, businessName: string) => {
+    if (window.confirm(`Approve registration for "${businessName}"? This will create a new business in the system.`)) {
+      setProcessingRegistrationId(registrationId);
+      approveRegistrationMutation.mutate(registrationId);
+    }
+  };
+
+  const handleRejectRegistration = (registrationId: number, businessName: string) => {
+    if (window.confirm(`Reject registration for "${businessName}"? The user will be notified.`)) {
+      setProcessingRegistrationId(registrationId);
+      rejectRegistrationMutation.mutate(registrationId);
+    }
+  };
+
   if (isLoading) return <LoadingSpinner />;
 
   return (
@@ -287,12 +336,12 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Business Claims</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Claims & Registrations</p>
                   <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {businessClaims?.length || 0}
+                    {(businessClaims?.length || 0) + (businessRegistrations?.length || 0)}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {businessClaims?.filter((c: any) => c.status === 'pending').length || 0} pending
+                    {businessClaims?.filter((c: any) => c.status === 'pending').length || 0} claims · {businessRegistrations?.filter((r: any) => r.status === 'pending').length || 0} registrations
                   </p>
                 </div>
               </div>
@@ -627,14 +676,41 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Expandable Business Claims */}
+        {/* Expandable Business Claims & Registrations */}
         {showClaims && (
           <div className="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Business Claims ({businessClaims?.length || 0})
-            </h3>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Business Claims & Registrations
+              </h3>
 
-            {businessClaims && businessClaims.length > 0 ? (
+              {/* Filter Tabs */}
+              <div className="flex gap-2 bg-gray-100 dark:bg-dark-bg p-1 rounded-lg">
+                <button
+                  onClick={() => setClaimFilter('claims')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    claimFilter === 'claims'
+                      ? 'bg-white dark:bg-dark-card text-orange-600 dark:text-orange-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  Claims ({businessClaims?.length || 0})
+                </button>
+                <button
+                  onClick={() => setClaimFilter('registrations')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    claimFilter === 'registrations'
+                      ? 'bg-white dark:bg-dark-card text-orange-600 dark:text-orange-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  Registrations ({businessRegistrations?.length || 0})
+                </button>
+              </div>
+            </div>
+
+            {/* Business Claims */}
+            {claimFilter === 'claims' && businessClaims && businessClaims.length > 0 ? (
               <div className="space-y-4">
                 {businessClaims.map((claim: any) => (
                   <div
@@ -750,7 +826,7 @@ export default function AdminDashboard() {
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : claimFilter === 'claims' ? (
               <div className="text-center py-12">
                 <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -762,7 +838,153 @@ export default function AdminDashboard() {
                   There are no business claims to review at the moment.
                 </p>
               </div>
-            )}
+            ) : null}
+
+            {/* Business Registrations */}
+            {claimFilter === 'registrations' && businessRegistrations && businessRegistrations.length > 0 ? (
+              <div className="space-y-4">
+                {businessRegistrations.map((registration: any) => (
+                  <div
+                    key={registration.id}
+                    className={`p-5 rounded-lg border-2 ${
+                      registration.status === 'pending'
+                        ? 'border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/10'
+                        : registration.status === 'approved'
+                        ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10'
+                        : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold text-lg text-gray-900 dark:text-white">
+                            {registration.businessName}
+                          </h4>
+                          <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
+                            NEW BUSINESS
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {registration.city?.name} • {registration.category?.name}
+                          {registration.subcategory && ` • ${registration.subcategory.name}`}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          registration.status === 'pending'
+                            ? 'bg-yellow-200 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
+                            : registration.status === 'approved'
+                            ? 'bg-green-200 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                            : 'bg-red-200 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+                        }`}
+                      >
+                        {registration.status}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                      <div className="bg-white dark:bg-dark-bg rounded p-3">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Owner Information</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{registration.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{registration.email}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{registration.phone}</p>
+                      </div>
+
+                      <div className="bg-white dark:bg-dark-bg rounded p-3">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Business Details</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          <span className="font-medium">Instagram:</span> @{registration.instagramHandle}
+                        </p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          <span className="font-medium">User:</span> {registration.user?.name || 'N/A'}
+                        </p>
+                        {registration.additionalInfo && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {registration.additionalInfo}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mb-3">
+                      <span>Submitted: {new Date(registration.createdAt).toLocaleString()}</span>
+                      {registration.status !== 'pending' && registration.reviewedAt && (
+                        <span>
+                          {registration.status === 'approved' ? 'Approved' : 'Rejected'}: {new Date(registration.reviewedAt).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+
+                    {registration.status === 'pending' && (
+                      <div className="flex gap-3 pt-3 border-t border-gray-200 dark:border-dark-border">
+                        <button
+                          onClick={() => handleApproveRegistration(registration.id, registration.businessName)}
+                          disabled={processingRegistrationId === registration.id}
+                          className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {processingRegistrationId === registration.id ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Approve & Create Business
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleRejectRegistration(registration.id, registration.businessName)}
+                          disabled={processingRegistrationId === registration.id}
+                          className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {processingRegistrationId === registration.id ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                              Reject Registration
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {registration.status !== 'pending' && registration.reviewer && (
+                      <div className="pt-3 border-t border-gray-200 dark:border-dark-border">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Reviewed by: {registration.reviewer.name} ({registration.reviewer.email})
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : claimFilter === 'registrations' ? (
+              <div className="text-center py-12">
+                <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  No Business Registrations
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  There are no business registrations to review at the moment.
+                </p>
+              </div>
+            ) : null}
           </div>
         )}
 
