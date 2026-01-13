@@ -189,16 +189,16 @@ export default function QuoteLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Section 1: Hero */}
-      <div className="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700">
+      <div className="bg-gradient-to-b from-orange-50 via-white to-gray-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-b border-gray-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
           <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               Find Multiple Service Providers <br className="hidden sm:block" />
               <span className="text-[#ff6b35]">in One Quote</span>
             </h1>
-            <p className="text-xl sm:text-2xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl sm:text-2xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
               Beauty, Food & Events specialists in your city. Compare quotes and find the perfect fit.
             </p>
           </div>
@@ -206,20 +206,20 @@ export default function QuoteLandingPage() {
       </div>
 
       {/* Section 2: Category Showcase */}
-      <div className="bg-slate-900 py-16 sm:py-20">
+      <div className="bg-white dark:bg-slate-900 py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Beauty Card */}
             <button
               onClick={() => handleCategoryCardClick('Beauty')}
-              className="bg-slate-800 border border-slate-700 rounded-2xl p-8 hover:shadow-2xl hover:shadow-[#ff6b35]/20 hover:-translate-y-2 transition-all duration-300 text-left group"
+              className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-8 hover:shadow-2xl hover:shadow-[#ff6b35]/20 hover:-translate-y-2 transition-all duration-300 text-left group"
             >
               <div className="text-6xl mb-4">💄</div>
               <h3 className="text-2xl font-bold text-[#ff6b35] mb-4">Beauty</h3>
-              <p className="text-gray-300 text-sm mb-6">
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
                 Nails • Lashes • Makeup • Hair
               </p>
-              <div className="flex items-center text-white group-hover:text-[#ff6b35] transition-colors">
+              <div className="flex items-center text-gray-900 dark:text-white group-hover:text-[#ff6b35] transition-colors">
                 <span className="font-medium">Get Beauty Quotes</span>
                 <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -230,14 +230,14 @@ export default function QuoteLandingPage() {
             {/* Food Card */}
             <button
               onClick={() => handleCategoryCardClick('Food')}
-              className="bg-slate-800 border border-slate-700 rounded-2xl p-8 hover:shadow-2xl hover:shadow-[#ff6b35]/20 hover:-translate-y-2 transition-all duration-300 text-left group"
+              className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-8 hover:shadow-2xl hover:shadow-[#ff6b35]/20 hover:-translate-y-2 transition-all duration-300 text-left group"
             >
               <div className="text-6xl mb-4">🍽️</div>
               <h3 className="text-2xl font-bold text-[#ff6b35] mb-4">Food</h3>
-              <p className="text-gray-300 text-sm mb-6">
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
                 Bakery • Catering • Chef
               </p>
-              <div className="flex items-center text-white group-hover:text-[#ff6b35] transition-colors">
+              <div className="flex items-center text-gray-900 dark:text-white group-hover:text-[#ff6b35] transition-colors">
                 <span className="font-medium">Get Food Quotes</span>
                 <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -248,14 +248,14 @@ export default function QuoteLandingPage() {
             {/* Events Card */}
             <button
               onClick={() => handleCategoryCardClick('Events')}
-              className="bg-slate-800 border border-slate-700 rounded-2xl p-8 hover:shadow-2xl hover:shadow-[#ff6b35]/20 hover:-translate-y-2 transition-all duration-300 text-left group"
+              className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl p-8 hover:shadow-2xl hover:shadow-[#ff6b35]/20 hover:-translate-y-2 transition-all duration-300 text-left group"
             >
               <div className="text-6xl mb-4">🎉</div>
               <h3 className="text-2xl font-bold text-[#ff6b35] mb-4">Events</h3>
-              <p className="text-gray-300 text-sm mb-6">
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
                 Decor • Planning • Photography
               </p>
-              <div className="flex items-center text-white group-hover:text-[#ff6b35] transition-colors">
+              <div className="flex items-center text-gray-900 dark:text-white group-hover:text-[#ff6b35] transition-colors">
                 <span className="font-medium">Get Events Quotes</span>
                 <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -267,9 +267,9 @@ export default function QuoteLandingPage() {
       </div>
 
       {/* Section 3: Why BuzzGram */}
-      <div className="bg-slate-950 py-16 sm:py-20 border-y border-slate-800">
+      <div className="bg-gray-100 dark:bg-slate-950 py-16 sm:py-20 border-y border-gray-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white text-center mb-12">
             Why <span className="text-[#ff6b35]">BuzzGram</span>?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -280,8 +280,8 @@ export default function QuoteLandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">One Form, Multiple Quotes</h3>
-              <p className="text-gray-400">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">One Form, Multiple Quotes</h3>
+              <p className="text-gray-600 dark:text-gray-400">
                 Fill out one simple form and get responses from multiple service providers in your area.
               </p>
             </div>
@@ -293,8 +293,8 @@ export default function QuoteLandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Compare & Choose</h3>
-              <p className="text-gray-400">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Compare & Choose</h3>
+              <p className="text-gray-600 dark:text-gray-400">
                 Review quotes, check provider profiles, and choose the best fit for your needs and budget.
               </p>
             </div>
@@ -306,8 +306,8 @@ export default function QuoteLandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Fast Responses</h3>
-              <p className="text-gray-400">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Fast Responses</h3>
+              <p className="text-gray-600 dark:text-gray-400">
                 Most providers respond within 24 hours. Get your project started quickly and efficiently.
               </p>
             </div>
@@ -316,9 +316,9 @@ export default function QuoteLandingPage() {
       </div>
 
       {/* Section 4: How It Works */}
-      <div className="bg-slate-900 py-16 sm:py-20">
+      <div className="bg-white dark:bg-slate-900 py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white text-center mb-12">
             How It <span className="text-[#ff6b35]">Works</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -327,8 +327,8 @@ export default function QuoteLandingPage() {
               <div className="w-20 h-20 bg-[#ff6b35] rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold text-white">
                 1
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Select Your Service</h3>
-              <p className="text-gray-400 text-lg">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Select Your Service</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">
                 Choose the category and type of service you need from our wide range of options.
               </p>
             </div>
@@ -338,8 +338,8 @@ export default function QuoteLandingPage() {
               <div className="w-20 h-20 bg-[#ff6b35] rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold text-white">
                 2
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Describe Your Needs</h3>
-              <p className="text-gray-400 text-lg">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Describe Your Needs</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">
                 Tell us what you're looking for, your timeline, and any specific requirements.
               </p>
             </div>
@@ -349,8 +349,8 @@ export default function QuoteLandingPage() {
               <div className="w-20 h-20 bg-[#ff6b35] rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-bold text-white">
                 3
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Get Quotes</h3>
-              <p className="text-gray-400 text-lg">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Get Quotes</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">
                 Receive quotes from qualified providers and choose the one that's right for you.
               </p>
             </div>
@@ -359,22 +359,22 @@ export default function QuoteLandingPage() {
       </div>
 
       {/* Section 5: Quote Form */}
-      <div id="quote-form" className="bg-slate-950 py-16 sm:py-20 border-y border-slate-800">
+      <div id="quote-form" className="bg-gray-50 dark:bg-slate-950 py-16 sm:py-20 border-y border-gray-200 dark:border-slate-800">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white text-center mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white text-center mb-4">
             Request Your <span className="text-[#ff6b35]">Quote</span>
           </h2>
-          <p className="text-gray-400 text-center mb-10">
+          <p className="text-gray-600 dark:text-gray-400 text-center mb-10">
             Fill out the form below and we'll connect you with the best service providers in your area.
           </p>
 
           {formSuccess ? (
-            <div className="bg-green-900/30 border border-green-700 rounded-lg p-8 text-center">
-              <svg className="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-green-50 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg p-8 text-center">
+              <svg className="w-16 h-16 text-green-600 dark:text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <h3 className="text-2xl font-bold text-white mb-2">Thank You!</h3>
-              <p className="text-gray-300 text-lg">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Thank You!</h3>
+              <p className="text-gray-700 dark:text-gray-300 text-lg">
                 Your quote request has been submitted. Providers will contact you shortly.
               </p>
               <button
@@ -387,8 +387,8 @@ export default function QuoteLandingPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {!user && (
-                <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-4">
-                  <p className="text-yellow-200">
+                <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4">
+                  <p className="text-yellow-800 dark:text-yellow-200">
                     Please{' '}
                     <Link to="/login" className="text-[#ff6b35] hover:underline font-medium">
                       login
@@ -403,14 +403,14 @@ export default function QuoteLandingPage() {
               )}
 
               {formError && (
-                <div className="bg-red-900/30 border border-red-700 rounded-lg p-4">
-                  <p className="text-red-200">{formError}</p>
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-4">
+                  <p className="text-red-800 dark:text-red-200">{formError}</p>
                 </div>
               )}
 
               {/* City Selector */}
               <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select Your City <span className="text-[#ff6b35]">*</span>
                 </label>
                 <select
@@ -418,7 +418,7 @@ export default function QuoteLandingPage() {
                   required
                   value={selectedCityId || ''}
                   onChange={(e) => setSelectedCityId(Number(e.target.value))}
-                  className="w-full px-4 py-3 border border-slate-600 rounded-lg bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
                 >
                   <option value="">Choose a city</option>
                   {cities?.map((city) => (
@@ -575,7 +575,7 @@ export default function QuoteLandingPage() {
 
               {/* Name */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Full Name <span className="text-[#ff6b35]">*</span>
                 </label>
                 <input
@@ -584,14 +584,14 @@ export default function QuoteLandingPage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-600 rounded-lg bg-slate-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
                   placeholder="John Doe"
                 />
               </div>
 
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Email <span className="text-[#ff6b35]">*</span>
                 </label>
                 <input
@@ -600,14 +600,14 @@ export default function QuoteLandingPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-600 rounded-lg bg-slate-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
                   placeholder="john@example.com"
                 />
               </div>
 
               {/* Phone */}
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Phone <span className="text-[#ff6b35]">*</span>
                 </label>
                 <input
@@ -616,14 +616,14 @@ export default function QuoteLandingPage() {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-600 rounded-lg bg-slate-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
                   placeholder="(555) 123-4567"
                 />
               </div>
 
               {/* Service Description */}
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Tell Us What You Need <span className="text-[#ff6b35]">*</span>
                 </label>
                 <textarea
@@ -632,14 +632,14 @@ export default function QuoteLandingPage() {
                   value={serviceDescription}
                   onChange={(e) => setServiceDescription(e.target.value)}
                   rows={5}
-                  className="w-full px-4 py-3 border border-slate-600 rounded-lg bg-slate-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent resize-none"
                   placeholder="Describe your project, timeline, and any specific requirements..."
                 />
               </div>
 
               {/* Budget */}
               <div>
-                <label htmlFor="budget" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="budget" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Budget (Optional)
                 </label>
                 <input
@@ -647,7 +647,7 @@ export default function QuoteLandingPage() {
                   type="text"
                   value={budget}
                   onChange={(e) => setBudget(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-600 rounded-lg bg-slate-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
                   placeholder="e.g., $500-$1000"
                 />
               </div>
@@ -666,37 +666,37 @@ export default function QuoteLandingPage() {
       </div>
 
       {/* Section 6: Social Proof */}
-      <div className="bg-slate-950 py-16 sm:py-20 border-b border-slate-800">
+      <div className="bg-white dark:bg-slate-950 py-16 sm:py-20 border-b border-gray-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Stat 1 */}
             <div className="text-center">
               <div className="text-5xl font-bold text-[#ff6b35] mb-2">2,500+</div>
-              <p className="text-gray-400 text-lg">Quotes Submitted</p>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">Quotes Submitted</p>
             </div>
 
             {/* Stat 2 */}
             <div className="text-center">
               <div className="text-5xl font-bold text-[#ff6b35] mb-2">950+</div>
-              <p className="text-gray-400 text-lg">Vetted Providers</p>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">Vetted Providers</p>
             </div>
 
             {/* Stat 3 */}
             <div className="text-center">
               <div className="text-5xl font-bold text-[#ff6b35] mb-2">4.8★</div>
-              <p className="text-gray-400 text-lg">Average Rating</p>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">Average Rating</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Section 7: Business Owner CTA */}
-      <div className="bg-gradient-to-b from-slate-900 to-slate-950 py-16 sm:py-20">
+      <div className="bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-950 py-16 sm:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Are You a <span className="text-[#ff6b35]">Service Provider</span>?
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="text-xl text-gray-700 dark:text-gray-300 mb-8">
             Join BuzzGram and connect with customers looking for your services. Create your free business profile today.
           </p>
           <Link
