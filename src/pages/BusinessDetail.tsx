@@ -271,14 +271,23 @@ export default function BusinessDetail() {
             )}
 
             {/* Location */}
-            {business.city && (
+            {(business.city || business.address) && (
               <div>
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
                   Location
                 </h2>
-                <p className="text-gray-700 dark:text-gray-300 text-sm">
-                  {business.city.name}
-                </p>
+                <div className="space-y-1">
+                  {business.address && (
+                    <p className="text-gray-700 dark:text-gray-300 text-sm">
+                      {business.address}
+                    </p>
+                  )}
+                  {business.city && (
+                    <p className="text-gray-700 dark:text-gray-300 text-sm">
+                      {business.city.name}
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
