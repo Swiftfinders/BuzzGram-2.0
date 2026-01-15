@@ -7,6 +7,7 @@ import CategoryFilter from '../components/CategoryFilter';
 import SubcategoryFilter from '../components/SubcategoryFilter';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PromotionalBanner from '../components/PromotionalBanner';
+import Footer from '../components/Footer';
 
 export default function CityPage() {
   const { cityId } = useParams<{ cityId: string }>();
@@ -83,7 +84,7 @@ export default function CityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-dark-bg">
+    <div className="min-h-screen bg-white dark:bg-dark-bg flex flex-col">
       {/* Promotional Banner */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <PromotionalBanner />
@@ -139,7 +140,7 @@ export default function CityPage() {
       </div>
 
       {/* Results Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
         {filteredBusinesses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredBusinesses.map((business) => (
@@ -162,6 +163,8 @@ export default function CityPage() {
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }
