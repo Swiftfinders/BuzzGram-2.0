@@ -100,13 +100,13 @@ export default function CityPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg flex flex-col">
       {/* Promotional Banner */}
-      <div className="mx-auto px-3 sm:px-6 lg:px-12 xl:px-16 pt-0 sm:pt-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pt-0 sm:pt-8">
         <PromotionalBanner />
       </div>
 
       {/* Filters */}
       <div className="bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border">
-        <div className="mx-auto px-3 sm:px-6 lg:px-12 xl:px-16 py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="space-y-6">
             {/* Search Bar - Mobile Only */}
             <div className="relative md:hidden">
@@ -154,10 +154,10 @@ export default function CityPage() {
       </div>
 
       {/* Results Section */}
-      <div className="mx-auto px-3 sm:px-6 lg:px-12 xl:px-16 py-10 flex-grow">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-10 flex-grow">
         {filteredBusinesses.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
               {displayedBusinesses.map((business) => (
                 <BusinessCard key={business.id} business={business} />
               ))}
