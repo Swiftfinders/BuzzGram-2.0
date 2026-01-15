@@ -1,14 +1,21 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { getOwnedBusinesses, getMyQuoteRequests } from '../lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getOwnedBusinesses, getMyQuoteRequests, getOwnerReviews, createReviewReply, updateReviewReply, deleteReviewReply } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/LoadingSpinner';
+import StarRating from '../components/StarRating';
+import type { Review } from '../types';
 
 export default function BusinessOwnerDashboard() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [showBusiness, setShowBusiness] = useState(true);
   const [showQuotes, setShowQuotes] = useState(true);
+  const [showReviews, setShowReviews] = useState(true);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [editingReply, setEditingReply] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState('');
 
   const { data: businesses, isLoading } = useQuery({
     queryKey: ['ownedBusinesses'],
@@ -19,6 +26,74 @@ export default function BusinessOwnerDashboard() {
     queryKey: ['myQuoteRequests'],
     queryFn: getMyQuoteRequests,
   });
+
+  const { data: reviews } = useQuery({
+    queryKey: ['ownerReviews'],
+    queryFn: getOwnerReviews,
+  });
+
+  // Reply mutations
+  const createReplyMutation = useMutation({
+    mutationFn: ({ reviewId, replyText }: { reviewId: number; replyText: string }) =>
+      createReviewReply(reviewId, replyText),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ownerReviews'] });
+      setReplyingTo(null);
+      setReplyText('');
+    },
+  });
+
+  const updateReplyMutation = useMutation({
+    mutationFn: ({ replyId, replyText }: { replyId: number; replyText: string }) =>
+      updateReviewReply(replyId, replyText),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ownerReviews'] });
+      setEditingReply(null);
+      setReplyText('');
+    },
+  });
+
+  const deleteReplyMutation = useMutation({
+    mutationFn: (replyId: number) => deleteReviewReply(replyId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ownerReviews'] });
+    },
+  });
+
+  // Reply handlers
+  const handleStartReply = (reviewId: number) => {
+    setReplyingTo(reviewId);
+    setEditingReply(null);
+    setReplyText('');
+  };
+
+  const handleStartEditReply = (replyId: number, currentText: string) => {
+    setEditingReply(replyId);
+    setReplyingTo(null);
+    setReplyText(currentText);
+  };
+
+  const handleSubmitReply = (reviewId: number) => {
+    if (!replyText.trim()) return;
+    createReplyMutation.mutate({ reviewId, replyText });
+  };
+
+  const handleUpdateReply = (replyId: number) => {
+    if (!replyText.trim()) return;
+    updateReplyMutation.mutate({ replyId, replyText });
+  };
+
+  const handleDeleteReply = (replyId: number) => {
+    if (confirm('Are you sure you want to delete this reply?')) {
+      deleteReplyMutation.mutate(replyId);
+    }
+  };
+
+  const handleCancelReply = () => {
+    setReplyingTo(null);
+    setEditingReply(null);
+    setReplyText('');
+  };
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -43,7 +118,7 @@ export default function BusinessOwnerDashboard() {
           /* Show Businesses */
           <div className="space-y-6">
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -73,6 +148,22 @@ export default function BusinessOwnerDashboard() {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Quote Requests</p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white">{quoteRequests?.length || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Reviews</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">{reviews?.length || 0}</p>
                   </div>
                 </div>
               </div>
@@ -302,6 +393,226 @@ export default function BusinessOwnerDashboard() {
                       )}
                     </div>
                   ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Reviews Section - Collapsible */}
+            {reviews && reviews.length > 0 && (
+              <div>
+                <button
+                  onClick={() => setShowReviews(!showReviews)}
+                  className="w-full bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6 hover:border-orange-500 dark:hover:border-orange-500 transition-all cursor-pointer text-left"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </div>
+                      <div className="ml-4">
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                          Reviews
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'} from customers
+                        </p>
+                      </div>
+                    </div>
+                    <svg
+                      className={`w-6 h-6 text-gray-400 transition-transform ${showReviews ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </button>
+
+                {showReviews && (
+                  <div className="mt-4 bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6">
+                    <div className="space-y-6">
+                      {reviews.map((review: Review) => (
+                        <div
+                          key={review.id}
+                          className="border border-gray-200 dark:border-dark-border rounded-lg p-6 hover:border-orange-500 dark:hover:border-orange-500 transition-all"
+                        >
+                          {/* Review Header */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                  {review.user?.name || 'Anonymous'}
+                                </h3>
+                                {/* Verified Badge */}
+                                <div className="flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/20 rounded-full">
+                                  <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                  </svg>
+                                  <span className="text-xs font-medium text-green-600 dark:text-green-400">Verified</span>
+                                </div>
+                                {/* Hidden Badge (if hidden) */}
+                                {review.status === 'hidden' && (
+                                  <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-900/20 text-xs font-medium text-gray-600 dark:text-gray-400 rounded-full">
+                                    Hidden by Admin
+                                  </span>
+                                )}
+                              </div>
+                              <StarRating rating={review.rating} size="sm" readonly />
+                            </div>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+
+                          {/* Review Text */}
+                          {review.reviewText && (
+                            <p className="text-gray-700 dark:text-gray-300 mb-4">
+                              {review.reviewText}
+                            </p>
+                          )}
+
+                          {/* Review Media */}
+                          {review.mediaUrl && (
+                            <div className="mb-4">
+                              {review.mediaUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                                <img
+                                  src={review.mediaUrl}
+                                  alt="Review media"
+                                  className="w-full sm:max-w-md h-64 object-cover rounded-lg border border-gray-200 dark:border-dark-border"
+                                />
+                              ) : (
+                                <video
+                                  src={review.mediaUrl}
+                                  controls
+                                  className="w-full sm:max-w-md h-64 rounded-lg border border-gray-200 dark:border-dark-border"
+                                />
+                              )}
+                            </div>
+                          )}
+
+                          {/* Existing Replies */}
+                          {review.replies && review.replies.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-dark-border">
+                              {review.replies.map((reply) => (
+                                <div key={reply.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 mb-3">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                        {reply.user?.name}
+                                      </span>
+                                      <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/20 text-xs font-medium text-orange-600 dark:text-orange-400 rounded-full">
+                                        Business Owner
+                                      </span>
+                                    </div>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      {new Date(reply.createdAt).toLocaleDateString()}
+                                    </span>
+                                  </div>
+
+                                  {editingReply === reply.id ? (
+                                    <div className="space-y-3">
+                                      <textarea
+                                        value={replyText}
+                                        onChange={(e) => setReplyText(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                                        rows={3}
+                                        placeholder="Edit your reply..."
+                                      />
+                                      <div className="flex gap-2">
+                                        <button
+                                          onClick={() => handleUpdateReply(reply.id)}
+                                          disabled={!replyText.trim() || updateReplyMutation.isPending}
+                                          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white text-sm font-medium rounded-lg transition-colors"
+                                        >
+                                          {updateReplyMutation.isPending ? 'Saving...' : 'Save'}
+                                        </button>
+                                        <button
+                                          onClick={handleCancelReply}
+                                          className="px-4 py-2 border border-gray-300 dark:border-dark-border hover:border-orange-500 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                                        {reply.replyText}
+                                      </p>
+                                      {reply.userId === user?.id && (
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={() => handleStartEditReply(reply.id, reply.replyText)}
+                                            className="text-sm text-orange-600 dark:text-orange-400 hover:underline"
+                                          >
+                                            Edit
+                                          </button>
+                                          <button
+                                            onClick={() => handleDeleteReply(reply.id)}
+                                            className="text-sm text-red-600 dark:text-red-400 hover:underline"
+                                          >
+                                            Delete
+                                          </button>
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Reply Form */}
+                          {replyingTo === review.id ? (
+                            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-dark-border space-y-3">
+                              <textarea
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                                rows={3}
+                                placeholder="Write your reply..."
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleSubmitReply(review.id)}
+                                  disabled={!replyText.trim() || createReplyMutation.isPending}
+                                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white text-sm font-medium rounded-lg transition-colors"
+                                >
+                                  {createReplyMutation.isPending ? 'Posting...' : 'Post Reply'}
+                                </button>
+                                <button
+                                  onClick={handleCancelReply}
+                                  className="px-4 py-2 border border-gray-300 dark:border-dark-border hover:border-orange-500 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            !review.replies || review.replies.length === 0 ? (
+                              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-dark-border">
+                                <button
+                                  onClick={() => handleStartReply(review.id)}
+                                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                >
+                                  Reply to Review
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-dark-border">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                  You've already replied to this review. Delete your reply to post a new one.
+                                </p>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

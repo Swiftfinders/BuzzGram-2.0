@@ -314,6 +314,28 @@ export const deleteOwnReview = async (reviewId: number) => {
   return data;
 };
 
+// Business Owner: Get reviews for owned business
+export const getOwnerReviews = async () => {
+  const { data } = await api.get('/owner/reviews');
+  return data.data;
+};
+
+// Review Replies
+export const createReviewReply = async (reviewId: number, replyText: string) => {
+  const { data } = await api.post(`/reviews/${reviewId}/reply`, { replyText });
+  return data;
+};
+
+export const updateReviewReply = async (replyId: number, replyText: string) => {
+  const { data } = await api.put(`/reviews/replies/${replyId}`, { replyText });
+  return data;
+};
+
+export const deleteReviewReply = async (replyId: number) => {
+  const { data } = await api.delete(`/reviews/replies/${replyId}`);
+  return data;
+};
+
 // Google OAuth authentication
 export const googleAuth = async (
   credential: string,

@@ -134,6 +134,19 @@ export interface GeneralQuote {
   subcategories?: Subcategory[];
 }
 
+export interface ReviewReply {
+  id: number;
+  reviewId: number;
+  userId: number;
+  replyText: string;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: number;
+    name: string;
+  };
+}
+
 export interface Review {
   id: number;
   businessId: number;
@@ -153,6 +166,7 @@ export interface Review {
     id: number;
     name: string;
   };
+  replies?: ReviewReply[];
 }
 
 export interface GoogleCredentialResponse {
