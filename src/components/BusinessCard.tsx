@@ -57,7 +57,7 @@ export default function BusinessCard({ business }: BusinessCardProps) {
   };
 
   return (
-    <div className="relative group bg-white dark:bg-dark-card p-5 sm:p-6 rounded-xl shadow-sm hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-dark-border">
+    <div className="relative group bg-white dark:bg-dark-card p-4 sm:p-6 rounded-xl shadow-sm hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-dark-border">
       {/* Favorite Button */}
       <button
         onClick={handleFavoriteClick}
