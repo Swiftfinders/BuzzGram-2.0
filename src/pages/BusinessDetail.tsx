@@ -34,6 +34,7 @@ export default function BusinessDetail() {
   // Review form state
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
+  const [reviewMediaUrl, setReviewMediaUrl] = useState('');
   const [reviewError, setReviewError] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
@@ -68,6 +69,7 @@ export default function BusinessDetail() {
       setReviewError('');
       setReviewRating(0);
       setReviewText('');
+      setReviewMediaUrl('');
       queryClient.invalidateQueries({ queryKey: ['reviews', id] });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
@@ -76,6 +78,37 @@ export default function BusinessDetail() {
       setReviewSuccess(false);
     },
   });
+
+  // Cloudinary upload widget
+  const openUploadWidget = () => {
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+    // @ts-ignore - Cloudinary widget is loaded via script tag
+    const widget = window.cloudinary.createUploadWidget(
+      {
+        cloudName: cloudName,
+        uploadPreset: uploadPreset,
+        sources: ['local', 'camera'],
+        multiple: false,
+        maxFiles: 1,
+        resourceType: 'auto',
+        clientAllowedFormats: ['image', 'video'],
+        maxFileSize: 10000000, // 10MB
+        maxImageWidth: 2000,
+        maxImageHeight: 2000,
+        maxVideoFileSize: 50000000, // 50MB
+        folder: 'reviews',
+      },
+      (error: any, result: any) => {
+        if (!error && result && result.event === 'success') {
+          setReviewMediaUrl(result.info.secure_url);
+        }
+      }
+    );
+
+    widget.open();
+  };
 
   // Filter subcategories by selected category
   const filteredSubcategories = subcategories?.filter(
@@ -484,6 +517,7 @@ export default function BusinessDetail() {
                     businessId: business.id,
                     rating: reviewRating,
                     reviewText: reviewText || undefined,
+                    mediaUrl: reviewMediaUrl || undefined,
                   });
                 }} className="space-y-4">
                   {/* Star Rating */}
@@ -514,18 +548,58 @@ export default function BusinessDetail() {
                     />
                   </div>
 
-                  {/* Media Upload Placeholder */}
+                  {/* Media Upload */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Add Photo or Video (Coming Soon)
+                      Add Photo or Video (Optional)
                     </label>
-                    <div className="border-2 border-dashed border-gray-300 dark:border-dark-border rounded-lg p-6 text-center">
-                      <svg className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Photo/video upload feature coming soon</p>
-                    </div>
+
+                    {reviewMediaUrl ? (
+                      <div className="relative">
+                        {/* Preview uploaded media */}
+                        {reviewMediaUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                          <img
+                            src={reviewMediaUrl}
+                            alt="Review media preview"
+                            className="w-full max-w-md rounded-lg border border-gray-300 dark:border-dark-border"
+                          />
+                        ) : reviewMediaUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+                          <video
+                            src={reviewMediaUrl}
+                            controls
+                            className="w-full max-w-md rounded-lg border border-gray-300 dark:border-dark-border"
+                          />
+                        ) : (
+                          <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                            <p className="text-sm text-green-800 dark:text-green-200">
+                              Media uploaded successfully
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Remove button */}
+                        <button
+                          type="button"
+                          onClick={() => setReviewMediaUrl('')}
+                          className="mt-2 text-sm text-red-600 dark:text-red-400 hover:underline"
+                        >
+                          Remove media
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={openUploadWidget}
+                        className="w-full border-2 border-dashed border-gray-300 dark:border-dark-border rounded-lg p-6 text-center hover:border-orange-500 dark:hover:border-orange-500 transition-colors"
+                      >
+                        <svg className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">Click to upload photo or video</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Max 10MB for images, 50MB for videos</p>
+                      </button>
+                    )}
                   </div>
 
                   {/* Submit Button */}
@@ -556,9 +630,17 @@ export default function BusinessDetail() {
                       {/* Review Header */}
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">
-                            {review.user?.name || 'Anonymous'}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              {review.user?.name || 'Anonymous'}
+                            </p>
+                            <div className="flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/20 rounded-full">
+                              <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span className="text-xs font-medium text-green-600 dark:text-green-400">Verified</span>
+                            </div>
+                          </div>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {new Date(review.createdAt).toLocaleDateString('en-US', {
                               year: 'numeric',
