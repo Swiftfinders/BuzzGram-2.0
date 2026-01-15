@@ -14,6 +14,7 @@ export default function CityPage() {
   const [searchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   // Get search term from URL params
   const searchTerm = searchParams.get('search') || '';
@@ -45,6 +46,11 @@ export default function CityPage() {
     setSelectedSubcategory(null);
   }, [selectedCategory]);
 
+  // Reset showAll when filters change
+  useEffect(() => {
+    setShowAll(false);
+  }, [selectedCategory, selectedSubcategory, searchTerm]);
+
   // Filter subcategories based on selected category
   const filteredSubcategories = useMemo(() => {
     if (!subcategories || !selectedCategory) return [];
@@ -65,6 +71,14 @@ export default function CityPage() {
       return matchesCategory && matchesSubcategory && matchesSearch;
     });
   }, [businesses, selectedCategory, selectedSubcategory, searchTerm]);
+
+  // Determine how many businesses to show initially
+  const shouldShowLoadMore = !selectedSubcategory && !searchTerm;
+  const initialLimit = typeof window !== 'undefined' && window.innerWidth < 768 ? 10 : 20;
+  const displayedBusinesses = shouldShowLoadMore && !showAll
+    ? filteredBusinesses.slice(0, initialLimit)
+    : filteredBusinesses;
+  const hasMoreToShow = shouldShowLoadMore && filteredBusinesses.length > initialLimit;
 
   if (businessesLoading || categoriesLoading) return <LoadingSpinner />;
 
@@ -142,11 +156,25 @@ export default function CityPage() {
       {/* Results Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
         {filteredBusinesses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredBusinesses.map((business) => (
-              <BusinessCard key={business.id} business={business} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {displayedBusinesses.map((business) => (
+                <BusinessCard key={business.id} business={business} />
+              ))}
+            </div>
+
+            {/* Load More Button */}
+            {hasMoreToShow && !showAll && (
+              <div className="mt-12 text-center">
+                <button
+                  onClick={() => setShowAll(true)}
+                  className="px-8 py-3 bg-white dark:bg-dark-card border-2 border-gray-300 dark:border-dark-border text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:border-orange-500 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-all"
+                >
+                  Load More
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-16 bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border">
             <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
