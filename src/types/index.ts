@@ -42,6 +42,7 @@ export interface Business {
   cityId: number;
   categoryId: number;
   subcategoryId: number | null;
+  ownerId: number | null;
   instagramHandle: string | null;
   instagramUrl: string | null;
   website: string | null;
