@@ -309,6 +309,11 @@ export const deleteReview = async (reviewId: number) => {
   return data;
 };
 
+export const deleteOwnReview = async (reviewId: number) => {
+  const { data } = await api.delete(`/reviews/my/${reviewId}`);
+  return data;
+};
+
 // Google OAuth authentication
 export const googleAuth = async (
   credential: string,

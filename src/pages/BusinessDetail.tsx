@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { getBusiness, getCategories, getSubcategories, submitQuoteRequest, createReview, getBusinessReviews } from '../lib/api';
+import { getBusiness, getCategories, getSubcategories, submitQuoteRequest, createReview, getBusinessReviews, deleteOwnReview } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/LoadingSpinner';
 import VerifiedBadge from '../components/VerifiedBadge';
@@ -78,6 +78,24 @@ export default function BusinessDetail() {
       setReviewSuccess(false);
     },
   });
+
+  // Delete own review mutation
+  const deleteOwnReviewMutation = useMutation({
+    mutationFn: deleteOwnReview,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews', id] });
+      setReviewSuccess(false);
+    },
+    onError: (error: any) => {
+      setReviewError(error.response?.data?.message || 'Failed to delete review');
+    },
+  });
+
+  const handleDeleteOwnReview = (reviewId: number) => {
+    if (window.confirm('Are you sure you want to delete your review? This action cannot be undone.')) {
+      deleteOwnReviewMutation.mutate(reviewId);
+    }
+  };
 
   // Cloudinary upload widget
   const openUploadWidget = () => {
@@ -494,9 +512,18 @@ export default function BusinessDetail() {
 
               <div className="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-lg p-6">
                 {user ? (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Posting as <span className="font-medium text-gray-900 dark:text-white">{user.name}</span>
-                  </p>
+                  <>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      Posting as <span className="font-medium text-gray-900 dark:text-white">{user.name}</span>
+                    </p>
+                    {reviews?.some(r => r.user?.id === user.id) && !reviewSuccess && (
+                      <div className="mb-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                        <p className="text-sm text-orange-800 dark:text-orange-200">
+                          You've already reviewed this business. To submit a new review, please delete your existing one first.
+                        </p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     <span className="text-orange-600 dark:text-orange-400 font-medium">Sign in</span> to leave a review
@@ -605,10 +632,10 @@ export default function BusinessDetail() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={createReviewMutation.isPending}
+                    disabled={createReviewMutation.isPending || (user && reviews?.some(r => r.user?.id === user.id))}
                     className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    {createReviewMutation.isPending ? 'Submitting...' : 'Submit Review'}
+                    {createReviewMutation.isPending ? 'Submitting...' : (user && reviews?.some(r => r.user?.id === user.id)) ? 'Already Reviewed' : 'Submit Review'}
                   </button>
                 </form>
               </div>
@@ -672,6 +699,19 @@ export default function BusinessDetail() {
                             alt="Review media"
                             className="rounded-lg max-w-full h-auto"
                           />
+                        </div>
+                      )}
+
+                      {/* Delete Button (only for review owner) */}
+                      {user && review.user?.id === user.id && (
+                        <div className="mt-4 pt-3 border-t border-gray-200 dark:border-dark-border">
+                          <button
+                            onClick={() => handleDeleteOwnReview(review.id)}
+                            disabled={deleteOwnReviewMutation.isPending}
+                            className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium transition-colors disabled:opacity-50"
+                          >
+                            {deleteOwnReviewMutation.isPending ? 'Deleting...' : 'Delete my review'}
+                          </button>
                         </div>
                       )}
                     </div>
