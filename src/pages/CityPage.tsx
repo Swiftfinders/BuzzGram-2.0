@@ -154,10 +154,10 @@ export default function CityPage() {
       </div>
 
       {/* Results Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 flex-grow">
         {filteredBusinesses.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8">
               {displayedBusinesses.map((business) => (
                 <BusinessCard key={business.id} business={business} />
               ))}
