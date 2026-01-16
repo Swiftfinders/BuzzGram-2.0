@@ -47,18 +47,16 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-6">
             <Link to="/" className="group">
-              <div className="flex items-center space-x-2">
+              <div>
                 {/* Modern Text Logo */}
                 <h1 className="text-2xl font-bold tracking-tight">
                   <span className="text-gray-900 dark:text-white">Buzz</span>
                   <span className="text-orange-500">Gram</span>
                 </h1>
-                {/* Accent Mark */}
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 group-hover:scale-125 transition-transform" />
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 tracking-wide">
+                  Discover Local Businesses
+                </p>
               </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 tracking-wide">
-                Discover Local Businesses
-              </p>
             </Link>
 
             {/* City Selector */}
