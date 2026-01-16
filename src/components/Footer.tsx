@@ -6,10 +6,12 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* BuzzGram Logo */}
         <div className="text-center mb-6">
-          <Link to="/" className="inline-block">
-            <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-              BuzzGram
-            </span>
+          <Link to="/" className="inline-flex items-center justify-center gap-2 group">
+            <h2 className="text-2xl font-bold tracking-tight">
+              <span className="text-gray-900 dark:text-white">Buzz</span>
+              <span className="text-orange-500">Gram</span>
+            </h2>
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 group-hover:scale-125 transition-transform" />
           </Link>
         </div>
 
