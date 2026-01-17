@@ -19,7 +19,7 @@ export default function CityPage() {
   // Get search term from URL params
   const searchTerm = searchParams.get('search') || '';
 
-  useQuery({
+  const { data: city } = useQuery({
     queryKey: ['cities'],
     queryFn: getCities,
     select: (cities) => cities.find((c) => c.id === Number(cityId)),
@@ -50,6 +50,184 @@ export default function CityPage() {
   useEffect(() => {
     setShowAll(false);
   }, [selectedCategory, selectedSubcategory, searchTerm]);
+
+  // SEO/AEO Optimization - ONLY FOR TORONTO (City ID 36)
+  useEffect(() => {
+    if (cityId !== '36' || !city || !businesses || !categories) return;
+
+    const selectedCategoryName = selectedCategory
+      ? categories.find(c => c.id === selectedCategory)?.name
+      : null;
+
+    // Generate page title
+    const pageTitle = selectedCategoryName
+      ? `${selectedCategoryName} in ${city.name} | Find Top Local Businesses | BuzzGram`
+      : `Local Businesses in ${city.name} | Beauty, Food & Events | BuzzGram`;
+
+    // Generate meta description
+    const categoryText = selectedCategoryName ? selectedCategoryName.toLowerCase() : 'beauty, food, and events';
+    const businessCount = filteredBusinesses.length;
+    const metaDescription = `Discover ${businessCount} verified ${categoryText} businesses in ${city.name}. Browse reviews, compare services, and connect instantly with top local businesses on BuzzGram.`;
+
+    // Update page title
+    document.title = pageTitle;
+
+    // Update or create meta description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', metaDescription);
+
+    // Add Open Graph tags
+    const setOgTag = (property: string, content: string) => {
+      let tag = document.querySelector(`meta[property="${property}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', property);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+
+    setOgTag('og:title', pageTitle);
+    setOgTag('og:description', metaDescription);
+    setOgTag('og:type', 'website');
+    setOgTag('og:url', window.location.href);
+
+    // Add Twitter Card tags
+    const setTwitterTag = (name: string, content: string) => {
+      let tag = document.querySelector(`meta[name="${name}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('name', name);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+
+    setTwitterTag('twitter:card', 'summary_large_image');
+    setTwitterTag('twitter:title', pageTitle);
+    setTwitterTag('twitter:description', metaDescription);
+
+    // Add Structured Data (JSON-LD)
+    const structuredData: any = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: selectedCategoryName ? `${selectedCategoryName} in ${city.name}` : `Local Businesses in ${city.name}`,
+      description: metaDescription,
+      numberOfItems: filteredBusinesses.length,
+      itemListElement: filteredBusinesses.slice(0, 20).map((business, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'LocalBusiness',
+          '@id': `https://buzzgram-frontend.vercel.app/business/${business.id}`,
+          name: business.name,
+          description: business.description || `${business.name} - a local business in ${city.name}`,
+          url: `https://buzzgram-frontend.vercel.app/business/${business.id}`,
+          address: business.address ? {
+            '@type': 'PostalAddress',
+            streetAddress: business.address,
+            addressLocality: city.name,
+            addressCountry: 'CA'
+          } : undefined,
+          telephone: business.phone || undefined,
+          email: business.email || undefined,
+        }
+      }))
+    };
+
+    // Add FAQ Schema
+    const faqData = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: `What are the best ${categoryText} businesses in ${city.name}?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `BuzzGram features ${businessCount} verified ${categoryText} businesses in ${city.name}. You can browse reviews, compare services, and connect with top-rated local businesses instantly.`
+          }
+        },
+        {
+          '@type': 'Question',
+          name: `How do I find verified ${categoryText} businesses in ${city.name}?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `Use BuzzGram to discover verified local businesses in ${city.name}. Filter by category, read authentic reviews, and view business details including contact information and services offered.`
+          }
+        },
+        {
+          '@type': 'Question',
+          name: `Can I contact ${categoryText} businesses directly on BuzzGram?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `Yes! BuzzGram allows you to connect instantly with businesses through quote requests. Simply select a business and submit your inquiry to receive responses directly.`
+          }
+        },
+        {
+          '@type': 'Question',
+          name: `Are the businesses on BuzzGram verified?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `BuzzGram features verified local businesses with authentic reviews from real customers. Businesses with the verified badge have been confirmed by our team.`
+          }
+        },
+        {
+          '@type': 'Question',
+          name: `What types of ${categoryText} services are available in ${city.name}?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `${city.name} offers a wide variety of ${categoryText} services. Browse our directory to find the perfect business that matches your needs, from budget-friendly to premium options.`
+          }
+        }
+      ]
+    };
+
+    // Add Breadcrumb Schema
+    const breadcrumbData = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: 'https://buzzgram-frontend.vercel.app'
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: city.name,
+          item: window.location.href
+        }
+      ]
+    };
+
+    // Combine all structured data
+    const combinedData = {
+      '@context': 'https://schema.org',
+      '@graph': [structuredData, faqData, breadcrumbData]
+    };
+
+    // Insert or update structured data script
+    let script = document.querySelector('script[type="application/ld+json"]');
+    if (!script) {
+      script = document.createElement('script');
+      script.setAttribute('type', 'application/ld+json');
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(combinedData);
+
+    // Cleanup function
+    return () => {
+      document.title = 'BuzzGram - Discover Local Businesses';
+    };
+  }, [cityId, city, businesses, categories, selectedCategory, filteredBusinesses]);
 
   // Filter subcategories based on selected category
   const filteredSubcategories = useMemo(() => {
@@ -103,6 +281,26 @@ export default function CityPage() {
       <div className="w-full md:max-w-7xl md:mx-auto px-2 md:px-6 lg:px-8 pt-0 sm:pt-8">
         <PromotionalBanner />
       </div>
+
+      {/* SEO Content Section - ONLY FOR TORONTO */}
+      {cityId === '36' && city && (
+        <div className="w-full md:max-w-7xl md:mx-auto px-2 md:px-6 lg:px-8 py-6">
+          <div className="bg-gradient-to-br from-orange-50 to-pink-50 dark:from-orange-900/10 dark:to-pink-900/10 rounded-xl p-6 border border-orange-100 dark:border-orange-900/30">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+              {selectedCategory
+                ? `${categories?.find(c => c.id === selectedCategory)?.name} in ${city.name}`
+                : `Discover Local Businesses in ${city.name}`
+              }
+            </h1>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              {selectedCategory
+                ? `Find verified ${categories?.find(c => c.id === selectedCategory)?.name.toLowerCase()} businesses in ${city.name}. Browse ${filteredBusinesses.length} local businesses, read authentic reviews, and connect instantly with top-rated services.`
+                : `Welcome to ${city.name}'s premier local business directory. Discover ${filteredBusinesses.length} verified businesses across beauty, food, and events. Connect with trusted local services, compare options, and book instantly.`
+              }
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border">
